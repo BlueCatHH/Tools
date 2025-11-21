@@ -1,0 +1,349 @@
+port: 7890
+socks-port: 7891
+mixed-port: 7892
+redir-port: 7893
+tproxy-port: 7894
+
+unified-delay: true
+geodata-mode: false
+geodata-loader: standard
+geo-auto-update: true
+geo-update-interval: 24
+tcp-concurrent: true
+find-process-mode: strict
+global-client-fingerprint: chrome
+
+allow-lan: true
+mode: rule
+log-level: info
+ipv6: true
+udp: true
+
+external-controller: 0.0.0.0:9090
+# external-ui: ui
+# external-ui-url: 'https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip'
+
+geox-url:
+  # geoip: 'https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geoip.dat'
+  # geosite: 'https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/geosite.dat'
+  mmdb: 'https://geodata.kelee.one/Country-Masaiki.mmdb'
+  asn: 'https://geodata.kelee.one/GeoLite2-ASN-P3TERX.mmdb'
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  force-domain:
+    - +.v2ex.com
+
+  skip-domain:
+    - Mijia Cloud
+
+tun:
+  enable: true
+  stack: system
+  dns-hijack:
+    - any:53
+  auto-route: true
+  auto-detect-interface: true
+
+# P2P下载端口
+listeners:
+- name: socks5-in-1
+  type: socks
+  port: 10808
+  listen: 0.0.0.0
+  udp: true
+  users: []
+  proxy: DIRECT
+
+dns:
+  enable: true
+  prefer-h3: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 28.0.0.1/8
+  fake-ip-filter:
+    - "*"
+    - +.lan
+  default-nameserver:
+    - 223.5.5.5
+    - 223.6.6.6
+  nameserver:
+    - https://223.5.5.5/dns-query
+    - https://223.6.6.6/dns-query
+
+# 锚点 - 节点订阅的参数 [每小时更新一次订阅节点，每 6 秒一次健康检查]
+NodeParam: &NodeParam {type: http, interval: 3600, health-check: {enable: true, url: 'http://www.google.com/blank.html', interval: 6}}
+
+# 锚点 - 节点订阅
+proxy-providers: 
+  机场名称1:
+    url: '机场1的订阅URL'
+    <<: *NodeParam
+    path: './proxy_providers/机场名称1.yaml'
+    override:
+      additional-prefix: " " # 为订阅节点添加机场名称前缀
+
+# 锚点 - 节点筛选组
+FilterHK: &FilterHK '^(?=.*((?i)🇭🇰|香港|(\b(HK|HKG|Hong)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterTW: &FilterTW '^(?=.*((?i)🇹🇼|台湾|(\b(TW|TWN|Tai|Taiwan)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterJP: &FilterJP '^(?=.*((?i)🇯🇵|日本|川日|东京|大阪|泉日|埼玉|(\b(JP|JPN|Japan)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterKR: &FilterKR '^(?=.*((?i)🇰🇷|韩国|韓|首尔|(\b(KR|KOR|Korea)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterSG: &FilterSG '^(?=.*((?i)🇸🇬|新加坡|狮|(\b(SG|SGP|Singapore)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterUS: &FilterUS '^(?=.*((?i)🇺🇸|美国|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|(\b(US|USA|United States)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterUK: &FilterUK '^(?=.*((?i)🇬🇧|英国|伦敦|(\b(UK|GBR|United Kingdom)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterFR: &FilterFR '^(?=.*((?i)🇫🇷|法国|(\b(FR|FRA|France)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterDE: &FilterDE '^(?=.*((?i)🇩🇪|德国|(\b(DE|DEU|Germany)(\d+)?\b)))(?!.*((?i)回国|校园|游戏|🎮|(\b(GAME)\b))).*$'
+FilterGame: &FilterGame '^(?=.*((?i)游戏|🎮|(\b(GAME)(\d+)?\b)))(?!.*((?i)回国|校园)).*$'
+FilterAll: &FilterAll '^(?=.*(.))(?!.*((?i)群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|超时|收藏|福利|邀请|好友|(\b(USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|Traffic)(\d+)?\b|(\d{4}-\d{2}-\d{2}|\dG)))).*$'
+FilterEP: &FilterEP '^(?!.*?EIP|100x).*(?=.*US|HK)(?=.*x)'
+
+
+# 策略组参数锚点
+# 锚点 - 时延优选参数 [每 6 秒一次惰性健康检查，容差 20ms，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
+UrlTest: &UrlTest {type: url-test, interval: 6, tolerance: 20, lazy: true, url: 'http://www.google.com/blank.html', disable-udp: false, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
+# 锚点 - 故障转移参数 [每 6 秒一次惰性健康检查，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
+FallBack: &FallBack {type: fallback, interval: 6, lazy: true, url: 'http://www.google.com/blank.html', disable-udp: false, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
+# 锚点 - 负载均衡参数 [每 6 秒一次惰性健康检查，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
+LoadBalance: &LoadBalance {type: load-balance, interval: 6, lazy: true, url: 'http://www.google.com/blank.html', disable-udp: false, strategy: consistent-hashing, timeout: 2000, max-failed-times: 3, hidden: true, include-all-providers: true}
+# 锚点 - 规则参数 [每小时更新一次订阅规则，更新规则时使用直连策略]
+RuleProviders: &RuleProviders {type: http, behavior: classical, interval: 3600, format: yaml, proxy: DIRECT}
+
+# 策略组
+proxy-groups: 
+  - {name: 全球选择, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: 境外下载, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: AI, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: TikTok, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: Shopify, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: SpeedtestIntl, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: App Store, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: Apple账户, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: TestFlight, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: 1Password, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: Netflix, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: Emby, type: select, proxies: [DIRECT, 安比 · 🍿, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: 游戏选择, type: select, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+  - {name: 兜底策略, type: fallback, proxies: [DIRECT, 香港 · 🏮, 台湾 · 🍍, 日本 · 🌸, 韩国 · 🪁, 狮城 · 🦁, 美国 · 🦅, 德国 · 🥖]}
+
+# 自动策略组（使用合并锚点 *FallBack，故障转移行为由锚点提供）
+  - {name: 香港 · 🏮, <<: *FallBack, proxies: [⏱香港手动, ⏱香港时延, 🚥香港故障, 🎛香港负载]}
+  - {name: 台湾 · 🍍, <<: *FallBack, proxies: [⏱台湾手动, ⏱台湾时延, 🚥台湾故障, 🎛台湾负载]}
+  - {name: 日本 · 🌸, <<: *FallBack, proxies: [⏱日本手动, ⏱日本时延, 🚥日本故障, 🎛日本负载]}
+  - {name: 韩国 · 🪁, <<: *FallBack, proxies: [⏱韩国手动, ⏱韩国时延, 🚥韩国故障, 🎛韩国负载]}
+  - {name: 狮城 · 🦁, <<: *FallBack, proxies: [⏱新国手动, ⏱新国时延, 🚥新国故障, 🎛新国负载]}
+  - {name: 美国 · 🦅, <<: *FallBack, proxies: [⏱美国手动, ⏱美国时延, 🚥美国故障, 🎛美国负载]}
+  - {name: 德国 · 🥖, <<: *FallBack, proxies: [⏱德国手动, ⏱德国时延, 🚥德国故障, 🎛德国负载]}
+  - {name: 安比 · 🍿, <<: *FallBack, proxies: [⏱安比手动, ⏱安比时延, 🚥安比故障, 🎛安比负载]}
+
+# 手动选择策略组
+  - {name: ⏱香港手动, type: select, include-all-providers: true, filter: *FilterHK}
+  - {name: ⏱台湾手动, type: select, include-all-providers: true, filter: *FilterTW}
+  - {name: ⏱日本手动, type: select, include-all-providers: true, filter: *FilterJP}
+  - {name: ⏱韩国手动, type: select, include-all-providers: true, filter: *FilterKR}
+  - {name: ⏱新国手动, type: select, include-all-providers: true, filter: *FilterSG}
+  - {name: ⏱美国手动, type: select, include-all-providers: true, filter: *FilterUS}
+  - {name: ⏱德国手动, type: select, include-all-providers: true, filter: *FilterDE}
+  - {name: ⏱安比手动, type: select, include-all-providers: true, filter: *FilterEP}
+
+# 时延优选策略组
+  - {name: ⏱香港时延, <<: *UrlTest, filter: *FilterHK}
+  - {name: ⏱台湾时延, <<: *UrlTest, filter: *FilterTW}
+  - {name: ⏱日本时延, <<: *UrlTest, filter: *FilterJP}
+  - {name: ⏱韩国时延, <<: *UrlTest, filter: *FilterKR}
+  - {name: ⏱新国时延, <<: *UrlTest, filter: *FilterSG}
+  - {name: ⏱美国时延, <<: *UrlTest, filter: *FilterUS}
+  - {name: ⏱德国时延, <<: *UrlTest, filter: *FilterDE}
+  - {name: ⏱安比时延, <<: *UrlTest, filter: *FilterEP}
+
+# 故障转移策略组
+  - {name: 🚥香港故障, <<: *FallBack, filter: *FilterHK}
+  - {name: 🚥台湾故障, <<: *FallBack, filter: *FilterTW}
+  - {name: 🚥日本故障, <<: *FallBack, filter: *FilterJP}
+  - {name: 🚥韩国故障, <<: *FallBack, filter: *FilterKR}
+  - {name: 🚥新国故障, <<: *FallBack, filter: *FilterSG}
+  - {name: 🚥美国故障, <<: *FallBack, filter: *FilterUS}
+  - {name: 🚥德国故障, <<: *FallBack, filter: *FilterDE}
+  - {name: 🚥安比故障, <<: *FallBack, filter: *FilterEP}
+
+# 负载均衡策略组
+  - {name: 🎛香港负载, <<: *LoadBalance, filter: *FilterHK}
+  - {name: 🎛台湾负载, <<: *LoadBalance, filter: *FilterTW}
+  - {name: 🎛日本负载, <<: *LoadBalance, filter: *FilterJP}
+  - {name: 🎛韩国负载, <<: *LoadBalance, filter: *FilterKR}
+  - {name: 🎛新国负载, <<: *LoadBalance, filter: *FilterSG}
+  - {name: 🎛美国负载, <<: *LoadBalance, filter: *FilterUS}
+  - {name: 🎛德国负载, <<: *LoadBalance, filter: *FilterDE}
+  - {name: 🎛安比负载, <<: *LoadBalance, filter: *FilterEP}
+
+# 订阅规则
+rule-providers:
+  LAN:
+    <<: *RuleProviders
+    path: './rules/Lan.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/LAN_SPLITTER.yaml'
+
+  Direct:
+    <<: *RuleProviders
+    path: './rules/Direct.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/Direct.yaml'
+
+  Proxy:
+    <<: *RuleProviders
+    path: './rules/Proxy.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/Proxy.yaml'
+
+  ChinaDownloadCDN:
+    <<: *RuleProviders
+    path: './rules/ChinaDownloadCDN.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/ChinaDownloadCDN.yaml'
+
+  InternationalDownloadCDN:
+    <<: *RuleProviders
+    path: './rules/InternationalDownloadCDN.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/InternationalDownloadCDN.yaml'
+
+  AI:
+    <<: *RuleProviders
+    path: './rules/AI.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/AI.yaml'
+
+  TikTok:
+    <<: *RuleProviders
+    path: './rules/TikTok.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/TikTok.yaml'
+
+  Shopify:
+    <<: *RuleProviders
+    path: './rules/Shopify.yaml'
+    url: 'https://rule.kelee.one/Clash/Shopify.yaml'
+
+  SpeedtestIntl:
+    <<: *RuleProviders
+    path: './rules/SpeedtestInternational.yaml'
+    url: 'https://rule.kelee.one/Tool/Clash/Rule/SpeedtestInternational.yaml'
+
+  Game:
+    <<: *RuleProviders
+    path: './rules/Game.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/Game.yaml'
+
+  1Password:
+    <<: *RuleProviders
+    path: './rules/1PasswordUS.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/1PasswordUS.yaml'
+
+  Steam:
+    <<: *RuleProviders
+    path: './rules/Steam.yaml'
+    url: 'https://rule.kelee.one/Clash/Steam.yaml'
+
+  Netflix:
+    <<: *RuleProviders
+    path: './rules/Netflix.yaml'
+    url: 'https://rule.kelee.one/Clash/Netflix.yaml'
+
+  Emby:
+    <<: *RuleProviders
+    path: './rules/E.P.list'
+    url: 'https://raw.githubusercontent.com/BlueCatHH/Tool/main/Clash/E.P.list'  
+
+  Emby1:
+    <<: *RuleProviders
+    path: './rules/Emby.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/EmbyServer.yaml'
+
+  iCloudChina:
+    <<: *RuleProviders
+    path: './rules/iCloudChina.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/iCloudChina.yaml'
+
+  ApplePushNotificationService:
+    <<: *RuleProviders
+    path: './rules/ApplePushNotificationService.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/ApplePushNotificationService.yaml'
+
+  AppleSoftwareUpdates:
+    <<: *RuleProviders
+    path: './rules/AppleSoftwareUpdates.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/AppleSoftwareUpdates.yaml'
+
+  AppleID:
+    <<: *RuleProviders
+    path: './rules/AppleID.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/AppleID.yaml'
+
+  AppStore:
+    <<: *RuleProviders
+    path: './rules/AppStore.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/AppStore.yaml'
+
+  TestFlight:
+    <<: *RuleProviders
+    path: './rules/TestFlight.yaml'
+    url: 'https://rule.kelee.one/Clash/TestFlight.yaml'
+
+  Microsoft:
+    <<: *RuleProviders
+    path: './rules/Microsoft.yaml'
+    url: 'https://rule.kelee.one/Clash/Microsoft.yaml'
+
+  Google:
+    <<: *RuleProviders
+    path: './rules/Google.yaml'
+    url: 'https://rule.kelee.one/Clash/Google.yaml'
+
+  Telegram:
+    <<: *RuleProviders
+    path: './rules/Telegram.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/Telegram.yaml'
+
+  ESET_China:
+    <<: *RuleProviders
+    path: './rules/ESET_China.yaml'
+    url: 'https://kelee.one/Tool/Clash/Rule/ESET_China.yaml'
+
+# 规则指向
+rules:
+  - RULE-SET, LAN, DIRECT
+  - RULE-SET, Direct, DIRECT
+  - RULE-SET, Proxy, 兜底策略
+  - RULE-SET, ChinaDownloadCDN, DIRECT
+  - RULE-SET, InternationalDownloadCDN, 境外下载
+  - RULE-SET, AI, AI
+  - RULE-SET, TikTok, TikTok
+  - RULE-SET, Shopify, Shopify
+  - RULE-SET, SpeedtestIntl, SpeedtestIntl
+  - RULE-SET, Steam, 兜底策略
+  - RULE-SET, Game, 游戏选择
+  - RULE-SET, Netflix, Netflix
+  - RULE-SET, Emby, Emby
+  - RULE-SET, Emby1, Emby
+  - RULE-SET, TestFlight, TestFlight
+  - RULE-SET, iCloudChina, DIRECT
+  - RULE-SET, ApplePushNotificationService, DIRECT
+  - RULE-SET, AppleSoftwareUpdates, DIRECT
+  - RULE-SET, AppleID, Apple账户
+  - RULE-SET, AppStore, App Store
+  - RULE-SET, 1Password, 1Password
+  - RULE-SET, Microsoft, 兜底策略
+  - RULE-SET, Google, 兜底策略
+  - RULE-SET, Telegram, 兜底策略
+  - RULE-SET, ESET_China, DIRECT
+  - GEOIP, CN, DIRECT
+  - MATCH, 兜底策略

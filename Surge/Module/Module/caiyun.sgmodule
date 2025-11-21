@@ -1,0 +1,18 @@
+#!name=caiyun
+#!desc=🔗 [2023/8/6 10:56:57] caiyun
+
+# 🔗 模块链接
+#SUBSCRIBED https://script.hub/file/_start_/https://raw.githubusercontent.com/chxm1023/Rewrite/main/caiyun.js/_end_/caiyun.sgmodule?type=qx-rewrite&target=surge-module
+
+
+[Script]
+
+caiyun_9 = type=http-response, pattern=^https?:\/\/(biz|wrapper)\.cyapi\.cn\/(.+\/(user.+|visitors|activity)|p\/v\d\/vip_info), requires-body=true, max-size=3145728, script-path=https://raw.githubusercontent.com/chxm1023/Rewrite/main/caiyun.js, timeout=60, script-update-interval=0
+
+[Map Local]
+
+^http:\/\/adx\.sogaha\.cn\/sdk\/ad\/get data="https://raw.githubusercontent.com/mieqq/mieqq/master/reject-200.txt"
+
+[MITM]
+
+hostname = %APPEND% *.cyapi.cn,adx.sogaha.cn
